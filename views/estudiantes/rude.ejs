@@ -1,0 +1,78 @@
+<!-- views/estudiantes/rude.ejs -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Ficha RUDE - <%= estudiante.nombres %></title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <div class="container">
+    <h1>📋 Formulario RUDE (R.M. 0684/2025)</h1>
+    <h2>Estudiante: <%= estudiante.nombres %> <%= estudiante.primer_apellido %> <%= estudiante.segundo_apellido %></h2>
+    <p><strong>Código RUDE:</strong> <%= estudiante.rude %></p>
+
+    <form action="/estudiantes/rude/<%= estudiante.id %>" method="POST">
+      
+      <!-- SECCIÓN 1: DATOS DE RESIDENCIA -->
+      <fieldset>
+        <legend>📍 Dirección Actual de Residencia</legend>
+        <label>Departamento:
+          <input type="text" name="depa_residencia" value="<%= detalle.depa_residencia || '' %>">
+        </label>
+        <label>Provincia:
+          <input type="text" name="provincia_residencia" value="<%= detalle.provincia_residencia || '' %>">
+        </label>
+        <label>Municipio:
+          <input type="text" name="municipio_residencia" value="<%= detalle.municipio_residencia || '' %>">
+        </label>
+        <label>Zona / Barrio:
+          <input type="text" name="zona_barrio" value="<%= detalle.zona_barrio || '' %>">
+        </label>
+        <label>Avenida / Calle:
+          <input type="text" name="avenida_calle" value="<%= detalle.avenida_calle || '' %>">
+        </label>
+        <label>Celular de Contacto:
+          <input type="text" name="celular_contacto" value="<%= detalle.celular_contacto || '' %>">
+        </label>
+      </fieldset>
+
+      <!-- SECCIÓN 2: ASPECTOS SOCIOECONÓMICOS -->
+      <fieldset>
+        <legend>🏠 Aspectos Socioeconómicos y Servicios</legend>
+        <label>Idioma de la niñez:
+          <input type="text" name="idioma_niñez" value="<%= detalle.idioma_niñez || '' %>">
+        </label>
+        <label>Autoidentificación Cultural:
+          <input type="text" name="autoidentificacion_cultural" value="<%= detalle.autoidentificacion_cultural || '' %>">
+        </label>
+        <div>
+          <label><input type="checkbox" name="servicio_agua" value="true" <%= detalle.servicio_agua ? 'checked' : '' %>> Servicio de Agua Potable</label>
+          <label><input type="checkbox" name="servicio_electricidad" value="true" <%= detalle.servicio_electricidad ? 'checked' : '' %>> Luz Eléctrica</label>
+          <label><input type="checkbox" name="servicio_alcantarillado" value="true" <%= detalle.servicio_alcantarillado ? 'checked' : '' %>> Alcantarillado</label>
+        </div>
+      </fieldset>
+
+      <!-- SECCIÓN 3: DATOS DEL TUTOR -->
+      <fieldset>
+        <legend>👨‍👩‍👦 Datos del Padre / Madre / Tutor</legend>
+        <label>CI Tutor:
+          <input type="text" name="padre_ci" value="<%= detalle.padre_ci || '' %>">
+        </label>
+        <label>Nombres:
+          <input type="text" name="padre_nombres" value="<%= detalle.padre_nombres || '' %>">
+        </label>
+        <label>Apellidos:
+          <input type="text" name="padre_apellidos" value="<%= detalle.padre_apellidos || '' %>">
+        </label>
+        <label>Ocupación Principal:
+          <input type="text" name="padre_ocupacion" value="<%= detalle.padre_ocupacion || '' %>">
+        </label>
+      </fieldset>
+
+      <button type="submit" class="btn-primary">💾 Guardar Cambios RUDE</button>
+      <a href="/estudiantes" class="btn-secondary">Volver</a>
+    </form>
+  </div>
+</body>
+</html>

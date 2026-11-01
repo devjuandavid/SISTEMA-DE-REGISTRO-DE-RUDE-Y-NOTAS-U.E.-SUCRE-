@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title><%= title %></title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50 p-6 font-sans text-slate-800">
+  <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-sm border border-slate-200">
+    <div class="mb-6 pb-4 border-b flex justify-between items-center">
+      <div>
+        <h1 class="text-2xl font-bold"><%= title %></h1>
+        <p class="text-xs text-slate-500">Selecciona el curso para tomar asistencia</p>
+      </div>
+      <a href="/dashboard" class="text-xs bg-slate-100 px-3 py-2 rounded font-bold hover:bg-slate-200">Volver al Dashboard</a>
+    </div>
+
+    <!-- Filtro -->
+    <form action="/asistencia/buscar" method="GET" class="flex gap-4 mb-6">
+      <div class="flex-1">
+        <label class="block text-xs font-bold mb-1">Curso:</label>
+        <select name="curso_id" required class="w-full border p-2 rounded text-sm bg-slate-50">
+          <option value="">-- Seleccionar Curso --</option>
+          <% cursos.forEach(c => { %>
+            <option value="<%= c.id %>" <%= cursoId == c.id ? 'selected' : '' %>><%= c.nombre %></option>
+          <% }) %>
+        </select>
+      </div>
+      <div>
+        <label class="block text-xs font-bold mb-1">Fecha:</label>
+        <input type="date" name="fecha" value="<%= fecha %>" class="border p-2 rounded text-sm bg-slate-50">
+      </div>
+      <div class="flex items-end">
+        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded text-xs font-bold hover:bg-blue-700">Cargar Lista</button>
+      </div>
+    </form>
+
+    <!-- Tabla -->
+    <% if (estudiantes && estudiantes.length > 0) { %>
+      <table class="w-full text-left text-sm border-collapse">
+        <thead class="bg-slate-50 text-slate-500 text-xs uppercase font-semibold border-b">
+          <tr>
+            <th class="p-3">Estudiante</th>
+            <th class="p-3 text-center">Estado</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          <% estudiantes.forEach(est => { %>
+            <tr class="hover:bg-slate-50">
+              <td class="p-3 font-semibold"><%= est.apellido %> <%= est.nombre %></td>
+              <td class="p-3 text-center space-x-2">
+                <label class="inline-flex items-center text-xs text-emerald-700 font-bold">
+                  <input type="radio" name="est_<%= est.id %>" value="PRESENTE" checked class="mr-1"> Presente
+                </label>
+                <label class="inline-flex items-center text-xs text-red-700 font-bold">
+                  <input type="radio" name="est_<%= est.id %>" value="FALTA" class="mr-1"> Falta
+                </label>
+                <label class="inline-flex items-center text-xs text-amber-700 font-bold">
+                  <input type="radio" name="est_<%= est.id %>" value="LICENCIA" class="mr-1"> Licencia
+                </label>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    <% } else if (cursoId) { %>
+      <p class="text-center text-slate-400 text-xs py-6">No hay estudiantes inscritos en este curso.</p>
+    <% } %>
+  </div>
+</body>
+</html>

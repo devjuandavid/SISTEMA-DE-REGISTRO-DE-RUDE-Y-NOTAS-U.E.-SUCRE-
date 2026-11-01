@@ -1,0 +1,1382 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Centralizador de Notas</title>
+
+  <style>
+    
+#exportarExcel,
+#exportarPDF {
+  border: none;
+  border-radius: 5px;
+  padding: 11px 18px;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+#exportarExcel {
+  background: #217346;
+}
+
+#exportarPDF {
+  background: #b42318;
+}
+
+#exportarExcel:hover,
+#exportarPDF:hover {
+  opacity: 0.9;
+}
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background: #f4f6f9;
+      color: #243447;
+    }
+
+    h2 {
+      color: #17365d;
+      margin-bottom: 20px;
+    }
+
+    .panel {
+      background: white;
+      border-radius: 8px;
+      padding: 18px;
+      margin-bottom: 16px;
+      border: 1px solid #dce3eb;
+    }
+
+    .controles,
+    .resumen {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+
+    .campo {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      min-width: 180px;
+      flex: 1;
+    }
+
+    label {
+      font-size: 13px;
+      font-weight: bold;
+    }
+
+    select {
+      padding: 10px;
+      border: 1px solid #b9c4d0;
+      border-radius: 5px;
+      background: white;
+    }
+
+    .dato {
+      flex: 1;
+      min-width: 150px;
+      background: #edf2f7;
+      border-radius: 6px;
+      padding: 12px;
+    }
+
+    .dato strong {
+      display: block;
+      margin-top: 6px;
+      font-size: 18px;
+      color: #17365d;
+    }
+
+    .tabla-contenedor {
+      overflow: auto;
+      max-height: 72vh;
+      background: white;
+      border: 1px solid #9ca3af;
+      border-radius: 6px;
+    }
+
+    #centralizador {
+      border-collapse: separate;
+      border-spacing: 0;
+      width: max-content;
+      min-width: 100%;
+      font-size: 12px;
+    }
+
+    #centralizador th,
+    #centralizador td {
+      border-right: 1px solid #a0a0a0;
+      border-bottom: 1px solid #a0a0a0;
+      padding: 3px;
+      text-align: center;
+      height: 29px;
+      white-space: nowrap;
+    }
+
+    #centralizador thead th {
+      position: sticky;
+      top: 0;
+      z-index: 3;
+      color: #17212f;
+      background: #e5e7eb;
+    }
+
+    #centralizador .grupo-ser {
+      background: #cfe4b0;
+    }
+
+    #centralizador .grupo-saber {
+      background: #cfe4f5;
+    }
+
+    #centralizador .grupo-hacer {
+      background: #ffe3a3;
+    }
+
+    #centralizador .grupo-auto {
+      background: #e5e7eb;
+    }
+
+    #centralizador .grupo-asistencia {
+      background: #cbdff0;
+    }
+
+    #centralizador .grupo-boletin {
+      background: #dce5f1;
+    }
+
+    #centralizador .nombre {
+      text-align: left;
+      min-width: 230px;
+      background: white;
+    }
+
+    #centralizador input.nota {
+      width: 47px;
+      height: 25px;
+      border: 1px solid transparent;
+      text-align: center;
+      background: transparent;
+      font-size: 12px;
+    }
+
+    #centralizador input.nota:focus {
+      outline: 2px solid #2563eb;
+      background: #eff6ff;
+    }
+
+    #centralizador input.invalida {
+      background: #fecaca;
+      border-color: #dc2626;
+    }
+
+    #centralizador input.valida {
+      background: #e8f5e9;
+    }
+
+    #centralizador .calculado {
+      background: #f1f5f9;
+      font-weight: bold;
+      min-width: 48px;
+    }
+
+    #centralizador .observacion {
+      min-width: 220px;
+      width: 100%;
+      border: 1px solid #d1d5db;
+      padding: 5px;
+    }
+
+    .mensaje {
+      margin-top: 15px;
+      padding: 12px;
+      background: #edf2f7;
+      border-radius: 6px;
+    }
+
+    .advertencia {
+      color: #8a5100;
+      font-size: 13px;
+    }
+
+    .sin-datos {
+      padding: 25px !important;
+      text-align: center;
+      color: #64748b;
+    }
+
+    .acciones {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 14px;
+      margin-top: 16px;
+    }
+
+    #guardarNotas {
+      background: #17633d;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      padding: 11px 18px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    #guardarNotas:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    #estadoGuardado {
+      font-size: 13px;
+      color: #475569;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h2>Centralizador de Calificaciones</h2>
+
+  <!-- SELECCIÓN ACADÉMICA -->
+  <div class="panel">
+    <div class="controles">
+
+      <div class="campo">
+        <label for="curso">Curso y paralelo</label>
+
+        <select id="curso">
+          <option value="">Seleccione curso</option>
+
+          <% cursos.forEach(curso => { %>
+            <option value="<%= curso.id %>">
+              <%= curso.nombre %> - Gestión <%= curso.gestion %>
+            </option>
+          <% }) %>
+        </select>
+      </div>
+
+      <div class="campo">
+        <label for="materia">Materia</label>
+
+        <select id="materia">
+          <option value="">Seleccione materia</option>
+
+          <% materias.forEach(materia => { %>
+            <option value="<%= materia.id %>">
+              <%= materia.nombre %>
+            </option>
+          <% }) %>
+        </select>
+      </div>
+
+      <div class="campo">
+        <label for="trimestre">Trimestre</label>
+
+        <select id="trimestre">
+          <option value="1">Primer trimestre</option>
+          <option value="2">Segundo trimestre</option>
+          <option value="3">Tercer trimestre</option>
+        </select>
+      </div>
+
+    </div>
+
+    <div class="acciones">
+      <button type="button" id="guardarNotas" disabled>
+        Guardar calificaciones
+      </button>
+      
+    <button type="button" id="exportarExcel">
+      Exportar Excel
+    </button>
+
+    <button type="button" id="exportarPDF">
+      Exportar PDF
+    </button>
+
+      <span id="estadoGuardado" role="status">
+        Seleccione un curso y una materia.
+      </span>
+    </div>
+  </div>
+
+  <!-- RESUMEN -->
+  <div class="panel">
+    <div class="resumen">
+
+      <div class="dato">
+        Estudiantes inscritos
+        <strong id="totalEstudiantes">0</strong>
+      </div>
+
+      <div class="dato">
+        Curso seleccionado
+        <strong id="cursoActual">Ninguno</strong>
+      </div>
+
+      <div class="dato">
+        Materia seleccionada
+        <strong id="materiaActual">Ninguna</strong>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- CENTRALIZADOR -->
+  <div class="tabla-contenedor">
+    <table id="centralizador">
+      <thead id="encabezadoNotas"></thead>
+      <tbody id="cuerpoNotas"></tbody>
+    </table>
+  </div>
+
+  <!-- VALIDACIONES -->
+  <div class="panel" style="margin-top:16px;">
+    <strong>Control de calificaciones</strong>
+
+    <p id="resultadoValidacion">
+      No hay calificaciones cargadas.
+    </p>
+
+    <p class="advertencia">
+      Las cantidades de casillas y las fórmulas de cálculo
+      siguen siendo provisionales hasta verificar el Excel
+      original. No deben utilizarse todavía para emitir
+      boletines oficiales.
+    </p>
+
+    <p class="advertencia">
+      En esta fase se guardan evaluaciones y asistencias.
+      Las observaciones y los resultados consolidados
+      todavía no se almacenan.
+    </p>
+  </div>
+
+  <p id="estado" class="mensaje" role="status">
+    Seleccione un curso y una materia.
+  </p>
+
+  <script>
+    // CONFIGURACIÓN PROVISIONAL
+    const CONFIG_CENTRALIZADOR = {
+      asistencia: 12,
+      ser: 5,
+      saber: 8,
+      hacer: 8,
+      maximos: {
+        ser: 10,
+        saber: 45,
+        hacer: 40,
+        autoevaluacion: 5
+      }
+    };
+
+    const REGLAS_CALCULO = {
+      decimales: 2
+    };
+
+    // ELEMENTOS DEL FORMULARIO
+    const cursoSelect =
+      document.getElementById('curso');
+
+    const materiaSelect =
+      document.getElementById('materia');
+
+    const trimestreSelect =
+      document.getElementById('trimestre');
+
+    const cuerpo =
+      document.getElementById('cuerpoNotas');
+
+    const estado =
+      document.getElementById('estado');
+
+    const totalEstudiantes =
+      document.getElementById('totalEstudiantes');
+
+    const cursoActual =
+      document.getElementById('cursoActual');
+
+    const materiaActual =
+      document.getElementById('materiaActual');
+
+    const resultadoValidacion =
+      document.getElementById('resultadoValidacion');
+
+    const botonGuardar =
+      document.getElementById('guardarNotas');
+
+    const estadoGuardado =
+      document.getElementById('estadoGuardado');
+
+    let solicitudActual = null;
+    let hayCambios = false;
+    let guardando = false;
+
+    // ENCABEZADOS
+    function crearEncabezado() {
+      const thead =
+        document.getElementById('encabezadoNotas');
+
+      thead.replaceChildren();
+
+      const grupos = document.createElement('tr');
+      const columnas = document.createElement('tr');
+
+      function agregarGrupo(titulo, cantidad, clase = '') {
+        const th = document.createElement('th');
+        th.textContent = titulo;
+        th.colSpan = cantidad;
+        th.className = clase;
+        grupos.appendChild(th);
+      }
+
+      function agregarColumna(titulo, clase = '') {
+        const th = document.createElement('th');
+        th.textContent = titulo;
+        th.className = clase;
+        columnas.appendChild(th);
+      }
+
+      agregarGrupo('DATOS', 3);
+      agregarColumna('N.º');
+      agregarColumna('RUDE');
+      agregarColumna('APELLIDOS Y NOMBRES');
+
+      agregarGrupo(
+        'CONTROL DE ASISTENCIA',
+        CONFIG_CENTRALIZADOR.asistencia + 4,
+        'grupo-asistencia'
+      );
+
+      for (
+        let i = 1;
+        i <= CONFIG_CENTRALIZADOR.asistencia;
+        i++
+      ) {
+        agregarColumna('A' + i, 'grupo-asistencia');
+      }
+
+      ['A', 'F', 'R', 'L'].forEach(tipo => {
+        agregarColumna(tipo, 'grupo-asistencia');
+      });
+
+      [
+        ['ser', 'SER'],
+        ['saber', 'SABER'],
+        ['hacer', 'HACER']
+      ].forEach(([dimension, titulo]) => {
+        const cantidad =
+          CONFIG_CENTRALIZADOR[dimension];
+
+        agregarGrupo(
+          titulo + ' / ' +
+          CONFIG_CENTRALIZADOR.maximos[dimension],
+          cantidad + 1,
+          'grupo-' + dimension
+        );
+
+        for (let i = 1; i <= cantidad; i++) {
+          agregarColumna(
+            'N' + i,
+            'grupo-' + dimension
+          );
+        }
+
+        agregarColumna(
+          'PROM.',
+          'grupo-' + dimension
+        );
+      });
+
+      agregarGrupo(
+        'AUTOEVALUACIÓN',
+        1,
+        'grupo-auto'
+      );
+      agregarColumna('SER / 5', 'grupo-auto');
+
+      agregarGrupo('RESULTADOS', 2);
+      agregarColumna('TOTAL');
+      agregarColumna('NOTA TRIM.');
+
+      agregarGrupo('BOLETÍN', 5, 'grupo-boletin');
+
+      ['1T', '2T', '3T', 'P.A.', 'ESTADO']
+        .forEach(titulo => {
+          agregarColumna(titulo, 'grupo-boletin');
+        });
+
+      agregarGrupo('SEGUIMIENTO', 2);
+      agregarColumna('CUALITATIVO');
+      agregarColumna('OBSERVACIONES');
+
+      thead.appendChild(grupos);
+      thead.appendChild(columnas);
+    }
+
+    // MOSTRAR MENSAJE
+    function mostrarMensaje(mensaje) {
+      cuerpo.replaceChildren();
+
+      const fila = document.createElement('tr');
+      const celda = document.createElement('td');
+
+      celda.colSpan = 100;
+      celda.className = 'sin-datos';
+      celda.textContent = mensaje;
+
+      fila.appendChild(celda);
+      cuerpo.appendChild(fila);
+    }
+
+    // CREAR FILA DE ESTUDIANTE
+    function crearFilaEstudiante(estudiante, indice) {
+      const fila = document.createElement('tr');
+
+      fila.dataset.estudianteId = estudiante.id;
+
+      function texto(valor, clase = '') {
+        const td = document.createElement('td');
+
+        td.textContent = valor ?? '';
+        td.className = clase;
+
+        fila.appendChild(td);
+        return td;
+      }
+
+      function entrada(tipo, dimension, maximo = 100) {
+        const td = document.createElement('td');
+        const input = document.createElement('input');
+
+        input.className = 'nota';
+        input.dataset.estudianteId = estudiante.id;
+        input.dataset.dimension = dimension;
+
+        if (tipo === 'asistencia') {
+          input.type = 'text';
+          input.maxLength = 1;
+          input.placeholder = '-';
+
+          input.addEventListener('input', () => {
+            input.value = input.value.toUpperCase();
+          });
+        } else {
+          input.type = 'number';
+          input.min = '0';
+          input.max = String(maximo);
+          input.step = '1';
+        }
+
+        td.appendChild(input);
+        fila.appendChild(td);
+
+        return input;
+      }
+
+      // DATOS RUDE
+      texto(indice + 1);
+      texto(estudiante.rude || '—');
+
+      texto([
+        estudiante.primer_apellido,
+        estudiante.segundo_apellido,
+        estudiante.nombres
+      ].filter(Boolean).join(' '), 'nombre');
+
+      // ASISTENCIA
+      for (
+        let i = 1;
+        i <= CONFIG_CENTRALIZADOR.asistencia;
+        i++
+      ) {
+        entrada('asistencia', 'asistencia_' + i);
+      }
+
+      ['A', 'F', 'R', 'L'].forEach(tipo => {
+        const celda = texto('0', 'calculado');
+        celda.dataset.resultado = 'asistencia_' + tipo;
+      });
+
+      // EVALUACIONES
+      ['ser', 'saber', 'hacer'].forEach(dimension => {
+        const cantidad =
+          CONFIG_CENTRALIZADOR[dimension];
+
+        for (let i = 1; i <= cantidad; i++) {
+          entrada(
+            'nota',
+            dimension + '_' + i,
+            CONFIG_CENTRALIZADOR.maximos[dimension]
+          );
+        }
+
+        const promedio = texto('—', 'calculado');
+        promedio.dataset.resultado =
+          'promedio_' + dimension;
+      });
+
+      // AUTOEVALUACIÓN
+      entrada(
+        'nota',
+        'autoevaluacion',
+        CONFIG_CENTRALIZADOR.maximos.autoevaluacion
+      );
+
+      // RESULTADOS
+      const total = texto('—', 'calculado');
+      total.dataset.resultado = 'total';
+
+      const trimestral = texto('—', 'calculado');
+      trimestral.dataset.resultado = 'trimestral';
+
+      // BOLETÍN
+      ['1T', '2T', '3T', 'PA', 'ESTADO']
+        .forEach(columna => {
+          const celda = texto('—', 'calculado');
+          celda.dataset.boletin = columna;
+        });
+
+      // SEGUIMIENTO
+      texto('—');
+
+      const observacion = document.createElement('td');
+      const campo = document.createElement('input');
+
+      campo.type = 'text';
+      campo.className = 'observacion';
+      campo.placeholder = 'Observaciones';
+
+      observacion.appendChild(campo);
+      fila.appendChild(observacion);
+
+      cuerpo.appendChild(fila);
+    }
+
+    // VALIDACIONES
+    function validarCentralizador() {
+      const entradas = [
+        ...cuerpo.querySelectorAll('input.nota')
+      ];
+
+      let validas = 0;
+      let pendientes = 0;
+      let invalidas = 0;
+
+      entradas.forEach(input => {
+        const valor = input.value.trim();
+
+        input.classList.remove('valida', 'invalida');
+
+        if (valor === '') {
+          input.setCustomValidity('');
+          pendientes++;
+          return;
+        }
+
+        let correcto;
+
+        if (
+          input.dataset.dimension.startsWith('asistencia_')
+        ) {
+          correcto = ['A', 'F', 'R', 'L'].includes(
+            valor.toUpperCase()
+          );
+        } else {
+          const numero = Number(valor);
+          const maximo = Number(input.max);
+
+          correcto =
+            Number.isInteger(numero) &&
+            numero >= 0 &&
+            numero <= maximo;
+        }
+
+        input.setCustomValidity(
+          correcto ? '' : 'Valor fuera del rango permitido'
+        );
+
+        input.classList.add(
+          correcto ? 'valida' : 'invalida'
+        );
+
+        if (correcto) {
+          validas++;
+        } else {
+          invalidas++;
+        }
+      });
+
+      resultadoValidacion.textContent =
+        'Registros válidos: ' + validas +
+        ' | Pendientes: ' + pendientes +
+        ' | Inválidos: ' + invalidas;
+
+      return invalidas === 0;
+    }
+
+    // CALCULAR PROMEDIO PROVISIONAL
+    function obtenerPromedio(fila, dimension) {
+      const entradas = [
+        ...fila.querySelectorAll(
+          `input[data-dimension^="${dimension}_"]`
+        )
+      ];
+
+      const valores = entradas
+        .filter(input =>
+          input.value.trim() !== '' &&
+          input.checkValidity()
+        )
+        .map(input => Number(input.value));
+
+      if (
+        entradas.length === 0 ||
+        valores.length !== entradas.length
+      ) {
+        return null;
+      }
+
+      const suma = valores.reduce(
+        (acumulado, nota) => acumulado + nota,
+        0
+      );
+
+      return suma / valores.length;
+    }
+
+    function mostrarResultado(fila, nombre, valor) {
+      const celda = fila.querySelector(
+        `[data-resultado="${nombre}"]`
+      );
+
+      if (!celda) return;
+
+      celda.textContent = valor === null
+        ? '—'
+        : Number(valor).toFixed(REGLAS_CALCULO.decimales);
+    }
+
+    function calcularFila(fila) {
+      const asistencias = [
+        ...fila.querySelectorAll(
+          'input[data-dimension^="asistencia_"]'
+        )
+      ];
+
+      ['A', 'F', 'R', 'L'].forEach(tipo => {
+        const cantidad = asistencias.filter(
+          input => input.value.toUpperCase() === tipo
+        ).length;
+
+        const celda = fila.querySelector(
+          `[data-resultado="asistencia_${tipo}"]`
+        );
+
+        if (celda) celda.textContent = cantidad;
+      });
+
+      const dimensiones = ['ser', 'saber', 'hacer'];
+      const promedios = {};
+
+      dimensiones.forEach(dimension => {
+        const promedio =
+          obtenerPromedio(fila, dimension);
+
+        promedios[dimension] = promedio;
+
+        mostrarResultado(
+          fila,
+          'promedio_' + dimension,
+          promedio
+        );
+      });
+
+      const autoInput = fila.querySelector(
+        '[data-dimension="autoevaluacion"]'
+      );
+
+      const autoValida =
+        autoInput &&
+        autoInput.value.trim() !== '' &&
+        autoInput.checkValidity();
+
+      const completo =
+        dimensiones.every(
+          dimension => promedios[dimension] !== null
+        ) && autoValida;
+
+      if (!completo) {
+        mostrarResultado(fila, 'total', null);
+        mostrarResultado(fila, 'trimestral', null);
+        return;
+      }
+
+      // CÁLCULO PROVISIONAL.
+      // NO SE GUARDA COMO NOTA OFICIAL.
+      const total =
+        promedios.ser +
+        promedios.saber +
+        promedios.hacer +
+        Number(autoInput.value);
+
+      mostrarResultado(fila, 'total', total);
+      mostrarResultado(fila, 'trimestral', total);
+    }
+
+    // RECUPERAR CALIFICACIONES DE POSTGRESQL
+    async function recuperarCalificaciones(
+      cursoId,
+      materiaId,
+      trimestre,
+      signal
+    ) {
+      const parametros = new URLSearchParams({
+        cursoId,
+        materiaId,
+        trimestre
+      });
+
+      const respuesta = await fetch(
+        '/notas/calificaciones?' + parametros.toString(),
+        { signal }
+      );
+
+      if (!respuesta.ok) {
+        throw new Error(
+          'Error al recuperar notas: HTTP ' +
+          respuesta.status
+        );
+      }
+
+      const datos = await respuesta.json();
+
+      if (!Array.isArray(datos.notas)) {
+        throw new Error(
+          'La respuesta de calificaciones es inválida'
+        );
+      }
+
+      datos.notas.forEach(nota => {
+        const fila = [
+          ...cuerpo.querySelectorAll(
+            'tr[data-estudiante-id]'
+          )
+        ].find(elemento =>
+          Number(elemento.dataset.estudianteId) ===
+          Number(nota.estudiante_id)
+        );
+
+        if (!fila) return;
+
+        (nota.detalles || []).forEach(detalle => {
+          const dimension =
+            detalle.dimension === 'autoevaluacion'
+              ? 'autoevaluacion'
+              : detalle.dimension + '_' + detalle.numero;
+
+          const input = [
+            ...fila.querySelectorAll('input.nota')
+          ].find(elemento =>
+            elemento.dataset.dimension === dimension
+          );
+
+          if (input) input.value = detalle.valor;
+        });
+
+        (nota.asistencias || []).forEach(asistencia => {
+          const dimension =
+            'asistencia_' + asistencia.numero;
+
+          const input = [
+            ...fila.querySelectorAll('input.nota')
+          ].find(elemento =>
+            elemento.dataset.dimension === dimension
+          );
+
+          if (input) input.value = asistencia.valor;
+        });
+
+        calcularFila(fila);
+      });
+
+      validarCentralizador();
+    }
+
+    // RECUPERAR RESUMEN ANUAL
+    async function cargarResumenAnual(
+      cursoId,
+      materiaId,
+      signal
+    ) {
+      const parametros = new URLSearchParams({
+        cursoId,
+        materiaId
+      });
+
+      const respuesta = await fetch(
+        '/notas/resumen-anual?' + parametros.toString(),
+        { signal }
+      );
+
+      if (!respuesta.ok) {
+        throw new Error(
+          'Error al cargar resumen anual: HTTP ' +
+          respuesta.status
+        );
+      }
+
+      const datos = await respuesta.json();
+
+      if (!Array.isArray(datos.estudiantes)) {
+        throw new Error(
+          'La respuesta del resumen anual es inválida'
+        );
+      }
+
+      datos.estudiantes.forEach(estudiante => {
+        const fila = [
+          ...cuerpo.querySelectorAll(
+            'tr[data-estudiante-id]'
+          )
+        ].find(elemento =>
+          Number(elemento.dataset.estudianteId) ===
+          Number(estudiante.estudianteId)
+        );
+
+        if (!fila) return;
+
+        [1, 2, 3].forEach(trimestre => {
+          const celda = fila.querySelector(
+            `[data-boletin="${trimestre}T"]`
+          );
+
+          if (!celda) return;
+
+          const nota =
+            estudiante.trimestres?.[trimestre] ?? null;
+
+          celda.textContent =
+            nota === null ? '—' : nota;
+        });
+
+        const promedio = fila.querySelector(
+          '[data-boletin="PA"]'
+        );
+
+        const estadoAcademico = fila.querySelector(
+          '[data-boletin="ESTADO"]'
+        );
+
+        if (promedio) promedio.textContent = '—';
+
+        if (estadoAcademico) {
+          estadoAcademico.textContent = 'Pendiente';
+        }
+      });
+    }
+
+    // CARGAR ESTUDIANTES DESDE RUDE
+    async function cargarEstudiantes() {
+      if (solicitudActual) {
+        solicitudActual.abort();
+      }
+
+      const cursoId = cursoSelect.value;
+      const materiaId = materiaSelect.value;
+      const trimestre = trimestreSelect.value;
+
+      cursoActual.textContent = cursoId
+        ? cursoSelect.selectedOptions[0].text.trim()
+        : 'Ninguno';
+
+      materiaActual.textContent = materiaId
+        ? materiaSelect.selectedOptions[0].text.trim()
+        : 'Ninguna';
+
+      totalEstudiantes.textContent = '0';
+      botonGuardar.disabled = true;
+
+      resultadoValidacion.textContent =
+        'No hay calificaciones cargadas.';
+
+      if (!cursoId || !materiaId) {
+        mostrarMensaje(
+          'Seleccione un curso y una materia.'
+        );
+
+        estado.textContent =
+          'Complete la selección académica.';
+
+        estadoGuardado.textContent =
+          'Seleccione un curso y una materia.';
+
+        hayCambios = false;
+        return;
+      }
+
+      mostrarMensaje('Cargando estudiantes...');
+
+      estado.textContent =
+        'Consultando estudiantes inscritos...';
+
+      estadoGuardado.textContent =
+        'Recuperando calificaciones...';
+
+      const controlador = new AbortController();
+      solicitudActual = controlador;
+
+      try {
+        const respuesta = await fetch(
+          '/notas/estudiantes/' +
+          encodeURIComponent(cursoId),
+          { signal: controlador.signal }
+        );
+
+        if (!respuesta.ok) {
+          throw new Error(
+            'Error HTTP ' + respuesta.status
+          );
+        }
+
+        const datos = await respuesta.json();
+
+        if (!Array.isArray(datos.estudiantes)) {
+          throw new Error(
+            'La respuesta de estudiantes es inválida'
+          );
+        }
+
+        if (solicitudActual !== controlador) return;
+
+        cuerpo.replaceChildren();
+
+        totalEstudiantes.textContent =
+          datos.estudiantes.length;
+
+        if (datos.estudiantes.length === 0) {
+          mostrarMensaje(
+            'No hay estudiantes inscritos en este curso.'
+          );
+
+          estado.textContent =
+            'El curso seleccionado no tiene estudiantes.';
+
+          estadoGuardado.textContent =
+            'No hay estudiantes para guardar.';
+
+          hayCambios = false;
+          return;
+        }
+
+        datos.estudiantes.forEach(
+          (estudiante, indice) => {
+            crearFilaEstudiante(estudiante, indice);
+          }
+        );
+
+        // AQUÍ ESTÁ LA LLAMADA QUE FALTABA
+        await recuperarCalificaciones(
+          cursoId,
+          materiaId,
+          trimestre,
+          controlador.signal
+        );
+
+        // DESPUÉS CARGAMOS LOS TRES TRIMESTRES
+        await cargarResumenAnual(
+          cursoId,
+          materiaId,
+          controlador.signal
+        );
+
+        if (solicitudActual !== controlador) return;
+
+        validarCentralizador();
+
+        hayCambios = false;
+        botonGuardar.disabled = false;
+
+        estadoGuardado.textContent =
+          'Calificaciones cargadas. Sin cambios pendientes.';
+
+        estado.textContent =
+          'Curso cargado correctamente. ' +
+          'Estudiantes: ' +
+          datos.estudiantes.length +
+          '. Trimestre: ' + trimestre + '.';
+
+      } catch (error) {
+        if (error.name === 'AbortError') return;
+
+        console.error(error);
+
+        estado.textContent =
+          'Error: ' + error.message;
+
+        estadoGuardado.textContent =
+          'No se pudieron cargar todas las calificaciones.';
+
+        // No permitir guardar si la carga fue incompleta.
+        botonGuardar.disabled = true;
+
+      } finally {
+        if (solicitudActual === controlador) {
+          solicitudActual = null;
+        }
+      }
+    }
+
+    // PREPARAR DATOS PARA GUARDAR
+    function obtenerDatosFila(fila) {
+      const detalles = [];
+      const asistencias = [];
+
+      fila.querySelectorAll('input.nota')
+        .forEach(input => {
+          const dimension = input.dataset.dimension;
+          const valor = input.value.trim();
+
+          if (valor === '') return;
+
+          if (dimension.startsWith('asistencia_')) {
+            asistencias.push({
+              numero: Number(dimension.split('_')[1]),
+              valor: valor.toUpperCase()
+            });
+
+          } else if (dimension === 'autoevaluacion') {
+            detalles.push({
+              dimension: 'autoevaluacion',
+              numero: 1,
+              valor: Number(valor)
+            });
+
+          } else {
+            const partes = dimension.split('_');
+
+            detalles.push({
+              dimension: partes[0],
+              numero: Number(partes[1]),
+              valor: Number(valor)
+            });
+          }
+        });
+
+      return {
+        estudianteId: Number(fila.dataset.estudianteId),
+        cursoId: Number(cursoSelect.value),
+        materiaId: Number(materiaSelect.value),
+        trimestre: Number(trimestreSelect.value),
+        detalles,
+        asistencias
+      };
+    }
+
+    // GUARDAR CALIFICACIONES
+    async function guardarCalificaciones() {
+      console.log('SE HIZO CLIC EN GUARDAR');
+
+    alert('El botón Guardar está funcionando');
+      if (guardando || botonGuardar.disabled) return;
+
+      if (!validarCentralizador()) {
+        alert(
+          'Corrija las calificaciones inválidas antes de guardar.'
+        );
+        return;
+      }
+
+      const filas = [
+        ...cuerpo.querySelectorAll(
+          'tr[data-estudiante-id]'
+        )
+      ];
+
+      if (filas.length === 0) {
+        alert('No hay estudiantes para guardar.');
+        return;
+      }
+
+      guardando = true;
+      botonGuardar.disabled = true;
+      cursoSelect.disabled = true;
+      materiaSelect.disabled = true;
+      trimestreSelect.disabled = true;
+
+      estadoGuardado.textContent =
+        'Guardando calificaciones...';
+
+      let guardados = 0;
+
+      try {
+        for (const fila of filas) {
+          const datos = obtenerDatosFila(fila);
+
+          const respuesta = await fetch(
+            '/notas/calificaciones',
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify(datos)
+            }
+          );
+
+          const resultado = await respuesta.json();
+
+          if (!respuesta.ok || !resultado.ok) {
+            throw new Error(
+              resultado.error ||
+              'No se pudo guardar el estudiante'
+            );
+          }
+
+          guardados++;
+        }
+
+        hayCambios = false;
+
+        estadoGuardado.textContent =
+          'Guardado correctamente: ' +
+          guardados + ' estudiantes.';
+
+      } catch (error) {
+        console.error(error);
+
+        estadoGuardado.textContent =
+          'Error después de guardar ' +
+          guardados + ' estudiantes: ' +
+          error.message;
+
+        // Mantener aviso de cambios pendientes
+        hayCambios = true;
+
+      } finally {
+        guardando = false;
+        cursoSelect.disabled = false;
+        materiaSelect.disabled = false;
+        trimestreSelect.disabled = false;
+        botonGuardar.disabled = false;
+      }
+    }
+
+    // EVENTOS
+    cursoSelect.addEventListener(
+      'change',
+      cargarEstudiantes
+    );
+
+    materiaSelect.addEventListener(
+      'change',
+      cargarEstudiantes
+    );
+
+    trimestreSelect.addEventListener(
+      'change',
+      cargarEstudiantes
+    );
+
+    cuerpo.addEventListener('input', event => {
+      const input = event.target;
+      const fila = input.closest('tr');
+
+      if (!fila) return;
+
+      if (input.matches('input.nota')) {
+        validarCentralizador();
+        calcularFila(fila);
+      }
+
+      if (
+        input.matches('input.nota') ||
+        input.matches('input.observacion')
+      ) {
+        hayCambios = true;
+
+        estadoGuardado.textContent =
+          'Hay cambios pendientes de guardar.';
+      }
+    });
+
+    botonGuardar.addEventListener(
+      'click',
+      guardarCalificaciones
+    );
+
+    window.addEventListener('beforeunload', event => {
+      if (!hayCambios) return;
+
+      event.preventDefault();
+      event.returnValue = '';
+    });
+
+    // INICIAR TABLA
+    crearEncabezado();
+
+    mostrarMensaje(
+      'Seleccione un curso y una materia.'
+    );
+    
+function descargarReporte(formato) {
+  const cursoId = cursoSelect.value;
+  const materiaId = materiaSelect.value;
+  const trimestre = trimestreSelect.value;
+
+  if (!cursoId || !materiaId) {
+    alert('Seleccione un curso y una materia.');
+    return;
+  }
+
+  if (hayCambios) {
+    alert(
+      'Primero guarde las calificaciones pendientes. ' +
+      'El reporte utiliza los datos de PostgreSQL.'
+    );
+    return;
+  }
+
+  const parametros = new URLSearchParams({
+    cursoId,
+    materiaId,
+    trimestre
+  });
+
+  const url =
+    '/notas/exportar/' +
+    formato +
+    '?' +
+    parametros.toString();
+
+  window.location.href = url;
+}
+
+document.getElementById('exportarExcel')
+  .addEventListener('click', () => {
+    descargarReporte('excel');
+  });
+
+document.getElementById('exportarPDF')
+  .addEventListener('click', () => {
+    descargarReporte('pdf');
+  });
+
+  </script>
+
+</body>
+</html>

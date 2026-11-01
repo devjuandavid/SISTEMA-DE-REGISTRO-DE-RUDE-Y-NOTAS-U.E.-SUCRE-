@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title><%= title %></title>
+</head>
+<body>
+  <h1>Registrar Nuevo Docente</h1>
+  <form action="/docentes/nuevo" method="POST">
+    <div>
+      <label>Nombre:</label>
+      <input type="text" name="nombre" required>
+    </div>
+    <div>
+      <label>Apellido:</label>
+      <input type="text" name="apellido" required>
+    </div>
+    <div>
+      <label>Email:</label>
+      <input type="email" name="email" required>
+    </div>
+    <div>
+      <label>Celular:</label>
+      <input type="text" name="celular">
+    </div>
+    <br>
+    <button type="submit">Guardar</button>
+    <a href="/docentes">Cancelar</a>
+  </form>
+</body>
+</html>

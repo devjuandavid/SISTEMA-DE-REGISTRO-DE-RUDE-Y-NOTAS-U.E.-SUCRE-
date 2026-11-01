@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans min-h-screen">
+
+  <nav class="bg-blue-900 text-white px-6 py-4 flex justify-between items-center shadow-md">
+    <h1 class="text-xl font-bold">U.E. ANTONIO JOSÉ DE SUCRE</h1>
+    <div class="flex items-center gap-4">
+      <a href="/cursos" class="text-sm bg-blue-800 hover:bg-blue-700 px-3 py-2 rounded transition">← Volver a Cursos</a>
+      <a href="/logout" class="text-sm bg-red-600 hover:bg-red-500 px-3 py-2 rounded transition">Cerrar Sesión</a>
+    </div>
+  </nav>
+
+  <div class="max-w-7xl mx-auto p-6 space-y-6">
+
+    <div class="bg-white p-6 rounded-xl shadow flex justify-between items-center">
+      <div>
+        <span class="text-xs font-bold text-blue-600 uppercase tracking-wider"><%= curso.nivel %> - <%= curso.turno %></span>
+        <h2 class="text-3xl font-extrabold text-slate-800"><%= curso.grado %>° "<%= curso.paralelo %>"</h2>
+        <p class="text-slate-500 text-sm">Gestión <%= curso.gestion %></p>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+      <div class="bg-white p-6 rounded-xl shadow h-fit">
+        <h3 class="text-lg font-bold text-slate-800 mb-4 border-b pb-2">Asignar Materia y Docente</h3>
+
+        <form action="/cursos/asignar-materia" method="POST" class="space-y-4">
+          <input type="hidden" name="curso_id" value="<%= curso.id %>">
+          <input type="hidden" name="gestion" value="<%= curso.gestion %>">
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Materia *</label>
+            <select name="materia_id" required class="w-full border rounded p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+              <option value="">-- Seleccionar Materia --</option>
+              <% materias.forEach(m => { %>
+                <option value="<%= m.id %>"><%= m.nombre %> (<%= m.campo %>)</option>
+              <% }) %>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Docente Asignado</label>
+            <select name="docente_id" class="w-full border rounded p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+              <option value="">-- Sin Docente Asignado --</option>
+              <% docentes.forEach(d => { %>
+                <option value="<%= d.id %>"><%= d.nombre %></option>
+              <% }) %>
+            </select>
+          </div>
+
+          <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded-lg shadow text-sm transition">
+            Guardar Asignación
+          </button>
+        </form>
+      </div>
+
+      <div class="lg:col-span-2 bg-white rounded-xl shadow overflow-hidden">
+        <div class="p-4 border-b bg-slate-50">
+          <h3 class="font-bold text-slate-700">Materias Asignadas al Curso</h3>
+        </div>
+
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-slate-50 border-b text-slate-600 text-xs uppercase font-semibold">
+              <th class="p-4">Campo</th>
+              <th class="p-4">Materia</th>
+              <th class="p-4">Docente Asignado</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 text-sm">
+            <% if (asignaciones.length === 0) { %>
+              <tr>
+                <td colspan="3" class="text-center p-8 text-slate-400">Aún no se han asignado materias a este curso.</td>
+              </tr>
+            <% } else { %>
+              <% asignaciones.forEach(a => { %>
+                <tr class="hover:bg-slate-50">
+                  <td class="p-4 text-xs text-slate-500"><%= a.campo %></td>
+                  <td class="p-4 font-bold text-slate-700"><%= a.materia_nombre %></td>
+                  <td class="p-4 font-medium text-slate-800">
+                    <%= a.docente_nombre %>
+                  </td>
+                </tr>
+              <% }) %>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+
+</body>
+</html>

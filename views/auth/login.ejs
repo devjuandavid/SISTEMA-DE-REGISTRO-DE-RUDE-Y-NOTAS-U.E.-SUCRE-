@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title><%= title %></title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-100 flex items-center justify-center min-h-screen">
+    <div class="w-full max-w-md bg-white rounded-lg shadow-lg border p-6">
+        <h1 class="text-xl font-bold text-center text-blue-900 mb-4 uppercase">U.E. Antonio José de Sucre</h1>
+        <% if (error) { %>
+            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded text-sm mb-4"><%= error %></div>
+        <% } %>
+        <form action="/login" method="POST" class="space-y-4">
+            <div>
+                <label class="block text-sm font-bold text-slate-700">Usuario o Correo</label>
+                <input type="text" name="usuario" required class="w-full border p-2 rounded mt-1">
+            </div>
+            <div>
+                <label class="block text-sm font-bold text-slate-700">Contraseña</label>
+                <input type="password" name="password" required class="w-full border p-2 rounded mt-1">
+            </div>
+            <button type="submit" class="w-full bg-blue-800 text-white font-bold py-2 rounded hover:bg-blue-900">Iniciar Sesión</button>
+        </form>
+    </div>
+</body>
+</html>

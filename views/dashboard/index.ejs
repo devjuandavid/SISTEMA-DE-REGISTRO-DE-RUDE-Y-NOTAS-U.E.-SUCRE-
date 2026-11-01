@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50 flex h-screen overflow-hidden font-sans text-slate-800">
+
+    <!-- SIDEBAR DE NAVEGACIÓN -->
+    <aside class="w-64 bg-slate-900 text-white flex flex-col justify-between">
+        <div class="p-4 overflow-y-auto">
+            <h2 class="font-bold text-lg border-b border-slate-700 pb-2">U.E. SUCRE <%= gestionActual %></h2>
+            <nav class="mt-4 space-y-1.5 text-sm">
+                <!-- RUTAS PRINCIPALES -->
+                <a href="/dashboard" class="block py-2 px-3 bg-blue-800 rounded font-semibold">Inicio</a>
+                <a href="/estudiantes" class="block py-2 px-3 hover:bg-slate-800 rounded transition">Estudiantes</a>
+                <a href="/inscripciones" class="block py-2 px-3 hover:bg-slate-800 rounded transition">Inscripciones</a>
+                <a href="/cursos" class="block py-2 px-3 hover:bg-slate-800 rounded transition">Cursos</a>
+
+                <!-- SECCIÓN MÓDULOS ACADÉMICOS -->
+                <div class="pt-3 pb-1">
+                    <p class="px-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Gestión Académica</p>
+                </div>
+                <a href="/docentes" class="block py-2 px-3 hover:bg-slate-800 rounded transition">Docentes</a>
+                <a href="/materias" class="block py-2 px-3 hover:bg-slate-800 rounded transition">Materias</a>
+                <a href="/asistencia" class="block py-2 px-3 hover:bg-slate-800 rounded transition">Asistencia</a>
+                <a href="/notas" class="block py-2 px-3 hover:bg-slate-800 rounded transition">Notas</a>
+                <a href="/academico/boletin/excel/1" class="block py-2 px-3 hover:bg-slate-800 text-emerald-400 rounded transition">Boletín Excel</a>
+            </nav>
+        </div>
+        <div class="p-4 border-t border-slate-800">
+            <a href="/logout" class="block text-center py-2 bg-red-700 hover:bg-red-800 rounded text-xs font-bold transition">Cerrar Sesión</a>
+        </div>
+    </aside>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <div class="flex-1 p-6 overflow-y-auto">
+        <header class="border-b pb-4 mb-6 flex justify-between items-center">
+            <div>
+                <h1 class="text-2xl font-bold text-slate-800">Panel Principal</h1>
+                <p class="text-xs text-slate-500">Gestión Escolar <%= gestionActual %></p>
+            </div>
+            
+            <div class="flex items-center gap-4">
+                <a href="/inscripciones" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-3 py-2 rounded shadow transition">
+                    + Nueva Inscripción
+                </a>
+                <span class="text-sm bg-blue-100 text-blue-800 px-3 py-1 rounded font-bold">
+                    <%= user ? user.nombre : 'Usuario' %> (<%= user ? user.rol : 'ADMIN' %>)
+                </span>
+            </div>
+        </header>
+
+        <!-- TARJETAS DE MÉTRICAS -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div class="bg-white p-4 rounded border border-slate-200 shadow-sm flex justify-between items-center">
+                <div>
+                    <p class="text-xs font-bold text-slate-500 uppercase">Total Estudiantes</p>
+                    <p class="text-3xl font-black text-blue-900 mt-1"><%= stats.totalEstudiantes %></p>
+                </div>
+                <div class="p-3 bg-blue-50 text-blue-600 rounded-full">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                </div>
+            </div>
+
+            <div class="bg-white p-4 rounded border border-slate-200 shadow-sm flex justify-between items-center">
+                <div>
+                    <p class="text-xs font-bold text-slate-500 uppercase">Inscritos <%= gestionActual %></p>
+                    <p class="text-3xl font-black text-emerald-700 mt-1"><%= stats.inscritosGestion %></p>
+                </div>
+                <div class="p-3 bg-emerald-50 text-emerald-600 rounded-full">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                </div>
+            </div>
+
+            <div class="bg-white p-4 rounded border border-slate-200 shadow-sm flex justify-between items-center">
+                <div>
+                    <p class="text-xs font-bold text-slate-500 uppercase">Cursos Habilitados</p>
+                    <p class="text-3xl font-black text-amber-700 mt-1"><%= stats.totalCursos %></p>
+                </div>
+                <div class="p-3 bg-amber-50 text-amber-600 rounded-full">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECCIÓN INFERIOR CON DOS COLUMNAS -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <!-- DETALLE DE INSCRITOS POR NIVEL -->
+            <div class="bg-white rounded border border-slate-200 shadow-sm p-4">
+                <h3 class="font-bold text-slate-700 border-b pb-2 mb-3 text-sm uppercase">Inscritos por Nivel</h3>
+                
+                <% if (porNivel && porNivel.length > 0) { %>
+                    <ul class="divide-y divide-slate-100 text-sm">
+                        <% porNivel.forEach(item => { %>
+                            <li class="py-2.5 flex justify-between items-center">
+                                <span class="font-medium text-slate-600"><%= item.nivel %></span>
+                                <span class="bg-blue-100 text-blue-800 text-xs font-bold px-2.5 py-1 rounded-full">
+                                    <%= item.total %>
+                                </span>
+                            </li>
+                        <% }); %>
+                    </ul>
+                <% } else { %>
+                    <p class="text-xs text-slate-400 text-center py-6">Sin registros para esta gestión.</p>
+                <% } %>
+            </div>
+
+            <!-- ÚLTIMOS INSCRITOS REGISTRADOS -->
+            <div class="lg:col-span-2 bg-white rounded border border-slate-200 shadow-sm overflow-hidden">
+                <div class="p-4 border-b bg-slate-50">
+                    <h3 class="font-bold text-slate-700 text-sm uppercase">Últimas Inscripciones</h3>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-slate-50 text-slate-500 text-xs uppercase font-semibold border-b">
+                            <tr>
+                                <th class="p-3">Estudiante</th>
+                                <th class="p-3">Curso</th>
+                                <th class="p-3 text-center">Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            <% if (ultimosInscritos && ultimosInscritos.length > 0) { %>
+                                <% ultimosInscritos.forEach(est => { %>
+                                    <tr class="hover:bg-slate-50 transition">
+                                        <td class="p-3 font-semibold text-slate-700"><%= est.nombre_completo %></td>
+                                        <td class="p-3">
+                                            <span class="bg-slate-100 text-slate-700 text-xs px-2 py-1 rounded font-medium border border-slate-200">
+                                                <%= est.curso %>
+                                            </span>
+                                        </td>
+                                        <td class="p-3 text-center">
+                                            <a href="/estudiantes/rude/<%= est.id %>" class="text-xs bg-cyan-50 hover:bg-cyan-100 text-cyan-700 font-semibold px-2 py-1 rounded border border-cyan-200 transition">
+                                                Ver RUDE
+                                            </a>
+                                        </td>
+                                    </tr>
+                                <% }); %>
+                            <% } else { %>
+                                <tr>
+                                    <td colspan="3" class="p-6 text-center text-xs text-slate-400">
+                                        Aún no hay estudiantes registrados en la gestión.
+                                    </td>
+                                </tr>
+                            <% } %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</body>
+</html>
